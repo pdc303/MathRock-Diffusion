@@ -1,10 +1,8 @@
-# Disco Diffusion
+# MathRock Diffusion
 
-<a href="https://colab.research.google.com/github/alembics/disco-diffusion/blob/main/Disco_Diffusion.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"/></a>
+<a href="https://colab.research.google.com/github/ethansmith2000/MathRock-Diffusion/blob/main/ES2000_MathRock_Diffusion.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open in Colab"/></a>
 
-A frankensteinian amalgamation of notebooks, models and techniques for the generation of AI Art and Animations.
-
-[to be updated with further info soon]
+Based off of DiscoDiffusion v5.61, including mods, bugfixes, quality of life improvements. 
 
 ## Contributing
 This project uses a special conversion tool to convert the python files into notebooks for easier development.
