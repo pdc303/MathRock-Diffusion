@@ -4,8 +4,18 @@
 
 Documentation of features: https://docs.google.com/document/d/1C5wt-q6i1JVb2zGsTCGcZev4NayFKC0p-ejbdZx4AkM/edit?usp=sharing
 
+Discord: https://discord.gg/zuKRmV5aFh
+
+MathRockDiffusion is a project to improve the Clip-Guided Diffusion program. 
 
 Based off of DiscoDiffusion v5.61, including mods, bugfixes, quality of life improvements. 
+
+
+
+
+
+everything below this line is documentation from the original DiscoDiffusion
+----------------------
 
 ## Contributing
 This project uses a special conversion tool to convert the python files into notebooks for easier development.
