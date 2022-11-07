@@ -102,6 +102,10 @@ handle_param_line()
 
 	local VARIABLE_NAME="$(echo "$LINE" | awk '{print $1}')"
 
+	local ASSIGNEE_NAME="$VARIABLE_NAME"
+	local KEY_NAME="$VARIABLE_NAME"
+	local DEFAULT_NAME="$VARIABLE_NAME"
+
 	if echo "$LINE" | grep '#.*param.*type.*:.*boolean' >/dev/null; then
 		TYPE="boolean"
 	elif echo "$LINE" | grep '#.*param.*type.*:.*number' >/dev/null; then
@@ -155,12 +159,23 @@ handle_param_line()
 	done
 
 	echo "$LINE" >> "$OUTFILE" || exit
-	emit_cu_get_config_value_line "$INDENT" "$VARIABLE_NAME" "$VARIABLE_NAME" "$PYTYPE" "$VARIABLE_NAME" "$OUTFILE"
+	emit_cu_get_config_value_line "$INDENT" "$ASSIGNEE_NAME" "$KEY_NAME" "$PYTYPE" "$DEFAULT_NAME" "$OUTFILE"
 
 	if [ "$VARIABLE_NAME" == "width_height" ]; then
 		emit_cu_get_config_value_line "$INDENT" "width_height[0]" "width" "int" "width_height[0]" "$OUTFILE"
 		emit_cu_get_config_value_line "$INDENT" "width_height[1]" "height" "int" "width_height[1]" "$OUTFILE"
 	fi
+
+	# special handling for seed
+	if [ "$VARIABLE_NAME" == "set_seed" ]; then
+		emit_cu_get_config_value_line "$INDENT" "seed_temp" "seed" "int" "None" "$OUTFILE"
+		echo "${INDENT}if seed_temp is not None:" >> "$OUTFILE" || exit
+		echo "${INDENT}    if seed_temp == -1:" >> "$OUTFILE" || exit
+		echo "${INDENT}        set_seed = 'random_seed'" >> "$OUTFILE" || exit
+		echo "${INDENT}    else:" >> "$OUTFILE" || exit
+		echo "${INDENT}        set_seed = str(seed_temp)" >> "$OUTFILE" || exit
+	fi
+
 }
 
 process_python_file_pass1()
