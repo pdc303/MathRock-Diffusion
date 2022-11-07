@@ -2,6 +2,15 @@ import sys
 import os
 import ast
 import json
+import random
+
+def cu_install_packages():
+    os.system('pip install imutils')
+
+# import additional packages required by MRD.
+# these packages will already be present on Colab
+def cu_import_packages():
+    import imutils
 
 def cu_str_to_bool(s):
     if s.lower() == "true":
@@ -124,3 +133,14 @@ def cu_get_text_prompt_list(default_value):
 
 def cu_callback_display_rate():
     pass
+
+def cu_get_self_dir():
+    self_script = os.path.abspath(__file__)
+    self_dir = os.path.dirname(self_script)
+    return self_dir
+
+def cu_callback_startup():
+    cu_install_packages()
+    cu_import_packages()
+
+
