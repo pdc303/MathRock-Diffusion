@@ -237,6 +237,7 @@ process_python_file_pass2()
 
 		if [ "$LNO" == "2" ]; then
 			do_utils_inject "$OUTFILE"
+			echo "cu_callback_startup()" >> "$OUTFILE" || exit
 		fi
 
 		if echo "$LINE" | fgrep '#param' >/dev/null | echo "$LINE" | fgrep '#@param' >/dev/null; then
@@ -245,6 +246,9 @@ process_python_file_pass2()
 		elif [ "$LINE" == "image_prompts = {" ]; then
 			echo "text_prompt_list = cu_get_text_prompt_list(text_prompt_list)" >> "$OUTFILE" || exit
 			LINEOUT="$LINE"
+		elif [ "$LINE" == "from google.colab.patches import cv2_imshow" ]; then
+			echo "if is_colab:" >> "$OUTFILE"
+			LINEOUT="    ${LINE}"
 		elif echo "$LINE" | grep "image.save('progress.png')$" >/dev/null; then
 			local INDENT="$(duplicate_indent "$LINE")"
 			echo "${INDENT}cu_callback_display_rate()" >> "$OUTFILE" || exit
