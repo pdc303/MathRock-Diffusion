@@ -30,7 +30,7 @@ def cu_look_for_command_line_arg(key, vartype, priority_last=True):
         args_list = sys.argv
 
     for arg in args_list:
-        if arg.startswith(f'{key}='):
+        if arg.lower().startswith(f'{key.lower()}='):
             sval = arg[len(f'{key}='):]
             retobj['found'] = True
             if vartype == str:
@@ -65,11 +65,13 @@ def read_json_key_from_file(filepath, key):
 
     retobj = {}
 
-    if key in obj.keys():
-        retobj['found'] = True
-        retobj['value'] = obj[key]
-    else:
-        retobj['found'] = False
+    for json_key in obj.keys():
+        if json_key.lower() == key.lower():
+            retobj['found'] = True
+            retobj['value'] = obj[json_key]
+            return retobj
+
+    retobj['found'] = False
 
     return retobj
 
@@ -83,7 +85,7 @@ def cu_look_for_config_arg(key, vartype, priority_last=True):
         args_list = sys.argv
 
     for arg in args_list:
-        if arg.startswith(f'config='):
+        if arg.lower().startswith(f'config='):
             spath = arg[len(f'config='):]
             lookup_info = read_json_key_from_file(spath, key)
 
@@ -117,8 +119,6 @@ def cu_get_text_prompt_list(default_value):
 
     if lu['found']:
         text_prompt_list = []
-        print('lu')
-        print(lu)
         text_prompt_list.append(lu['value'])
         return text_prompt_list
 
