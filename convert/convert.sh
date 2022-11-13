@@ -164,6 +164,9 @@ handle_param_line()
 	if [ "$VARIABLE_NAME" == "width_height" ]; then
 		emit_cu_get_config_value_line "$INDENT" "width_height[0]" "width" "int" "width_height[0]" "$OUTFILE"
 		emit_cu_get_config_value_line "$INDENT" "width_height[1]" "height" "int" "width_height[1]" "$OUTFILE"
+	elif [ "$VARIABLE_NAME" == "n_batches" ]; then
+		# process_prompt_list depends on n_batches so we must call it here
+		echo "text_prompt_list = process_prompt_list(text_prompt_list)" >> "$OUTFILE" || exit
 	fi
 
 	# special handling for seed

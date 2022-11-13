@@ -12,6 +12,11 @@ def cu_install_packages():
 def cu_import_packages():
     import imutils
 
+def cu_get_self_dir():
+    self_script = os.path.abspath(__file__)
+    self_dir = os.path.dirname(self_script)
+    return self_dir
+
 def cu_str_to_bool(s):
     if s.lower() == "true":
         return True
@@ -131,13 +136,60 @@ def cu_get_text_prompt_list(default_value):
 
     return default_value
 
+def get_random_line_from_file(filepath):
+    try:
+        f = open(filepath, "r")
+    except:
+        print("Error: Failed to open file: " + filepath)
+        sys.exit(1)
+
+    lines = f.readlines()
+    return random.choice(lines).replace("\n", "")
+
+default_artists_list = f'{cu_get_self_dir()}/convert/lists/artists-curated.txt'
+def get_random_artist():
+    artists_list = cu_get_config_value('artists_list', str, default_artists_list)
+    return get_random_line_from_file(artists_list)
+
+default_sites_list = f'{cu_get_self_dir()}/convert/lists/sites.txt'
+def get_random_site():
+    sites_list = cu_get_config_value('sites_list', str, default_sites_list)
+    return get_random_line_from_file(sites_list)
+
+def process_prompt_directive_artist(prompt_str):
+    while '%ARTIST%' in prompt_str:
+        artist = get_random_artist()
+        prompt_str = prompt_str.replace('%ARTIST%', artist, 1)
+
+    return prompt_str
+
+def process_prompt_directive_site(prompt_str):
+    while '%SITE%' in prompt_str:
+        site = get_random_site()
+        prompt_str = prompt_str.replace('%SITE%', site, 1)
+
+    return prompt_str
+
+def process_prompt_list(prompt_list):
+    global n_batches
+
+    prompt_list_out = []
+
+    for prompt in prompt_list:
+        for bn in range(n_batches):
+            new_prompt = []
+            for prompt_part in prompt:
+                prompt_part = process_prompt_directive_artist(prompt_part)
+                prompt_part = process_prompt_directive_site(prompt_part)
+                new_prompt.append(prompt_part)
+            prompt_list_out.append(new_prompt)
+
+    n_batches = 1
+
+    return prompt_list_out
+
 def cu_callback_display_rate():
     pass
-
-def cu_get_self_dir():
-    self_script = os.path.abspath(__file__)
-    self_dir = os.path.dirname(self_script)
-    return self_dir
 
 def cu_callback_startup():
     cu_install_packages()
