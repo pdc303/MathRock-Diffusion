@@ -27,7 +27,6 @@ preflight()
 	G_TEMP_DIR="$(mktemp -d)"
 	G_PYTHON_FILE_A="${G_TEMP_DIR}/ES2000_MathRock_Diffusion.a.py"
 	G_PYTHON_FILE_B="${G_TEMP_DIR}/ES2000_MathRock_Diffusion.b.py"
-	G_PYTHON_FILE_C="${G_TEMP_DIR}/ES2000_MathRock_Diffusion.c.py"
 	G_OUTFILE="${G_SELFDIR}/../ES2000_MathRock_Diffusion.py"
 
 	check_system_prereqs
@@ -57,6 +56,8 @@ convert_and_output_ipython_cell_magic()
 {
 	local INPUT="$1"
 	local OUTFILE="$2"
+
+	> "$OUTFILE" || exit
 
 	INPUT="$(echo "$INPUT" | sed "s/^get_ipython().run_cell_magic('capture', '', '//g")"
 	INPUT="$(echo "$INPUT" | sed "s/')$//")"
@@ -178,7 +179,6 @@ handle_param_line()
 		echo "${INDENT}    else:" >> "$OUTFILE" || exit
 		echo "${INDENT}        set_seed = str(seed_temp)" >> "$OUTFILE" || exit
 	fi
-
 }
 
 process_python_file_pass1()
@@ -209,6 +209,50 @@ process_python_file_pass1()
 	done
 }
 
+# add bew cu_get_config_value() calls for variables/parameters which are
+# not currently settable parameters
+process_python_file_pass_add_new_config_gets()
+{
+	local INFILE="$1"
+	local OUTFILE="$2"
+
+	> "$OUTFILE" || exit
+
+	local VARS=(
+			"randomize_class" "bool"
+			"fuzzy_prompt" "bool"
+			"rand_mag" "float"
+	)
+
+	local OLDIFS="$IFS"
+	IFS=$'\n'
+
+	local LINES=( $(< "$INFILE") )
+	IFS="$OLDIFS"
+
+	for LNO in ${!LINES[@]}; do
+		local LINE="${LINES[$LNO]}"
+		local LINE_ELEMS=( $LINE )
+		local LINEOUT="$LINE"
+
+		if [ "${#LINE_ELEMS[@]}" == "3" ] && [ "${LINE_ELEMS[1]}" == "=" ]; then
+			VNO=0
+			while [ "$VNO" -lt "${#VARS[@]}" ]; do
+				if [ "${LINE_ELEMS[0]} = " == "${VARS[$VNO]} = " ]; then
+					echo "$LINE" >> "$OUTFILE"
+					emit_cu_get_config_value_line "" "${VARS[$VNO]}" "${VARS[$VNO]}" "${VARS[$(($VNO + 1))]}" "${VARS[$VNO]}" "$OUTFILE"
+					LINEOUT=
+				fi
+				((VNO+=2))
+			done
+		fi
+
+		if [ -n "$LINEOUT" ]; then
+			echo "$LINEOUT" >> "$OUTFILE"
+		fi
+	done
+}
+
 duplicate_indent()
 {
 	local S="$1"
@@ -227,6 +271,8 @@ process_python_file_pass2()
 {
 	local INFILE="$1"
 	local OUTFILE="$2"
+
+	> "$OUTFILE" || exit
 
 	local OLDIFS="$IFS"
 	IFS=$'\n'
@@ -277,10 +323,12 @@ main()
 	echo "Processing python script (pass 1) ..."
 	process_python_file_pass1 "$G_PYTHON_FILE_A" "$G_PYTHON_FILE_B"
 	echo "Processing python script (pass 2) ..."
-	process_python_file_pass2 "$G_PYTHON_FILE_B" "$G_PYTHON_FILE_C"
+	process_python_file_pass2 "$G_PYTHON_FILE_B" "$G_PYTHON_FILE_A"
+	echo "Processing python script (pass 3) ..."
+	process_python_file_pass_add_new_config_gets "$G_PYTHON_FILE_A" "$G_PYTHON_FILE_B"
 
 	echo "Writing output file: $(readlink -f "$G_OUTFILE")"
-	cp "$G_PYTHON_FILE_C" "$G_OUTFILE" || exit
+	cp "$G_PYTHON_FILE_B" "$G_OUTFILE" || exit
 
 	echo "Done!"
 
