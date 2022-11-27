@@ -57,8 +57,6 @@ convert_and_output_ipython_cell_magic()
 	local INPUT="$1"
 	local OUTFILE="$2"
 
-	> "$OUTFILE" || exit
-
 	INPUT="$(echo "$INPUT" | sed "s/^get_ipython().run_cell_magic('capture', '', '//g")"
 	INPUT="$(echo "$INPUT" | sed "s/')$//")"
 
@@ -146,8 +144,11 @@ handle_param_line()
 
 	# type overrides
 	case $VARIABLE_NAME in
-		n_batches)
+		n_batches | symm_loss_scale)
 			local PYTYPE="int"
+			;;
+		symm_switch)
+			local PYTYPE="float"
 			;;
 		*)
 			;;
@@ -185,6 +186,8 @@ process_python_file_pass1()
 {
 	local INFILE="$1"
 	local OUTFILE="$2"
+
+	> "$OUTFILE" || exit
 
 	local OLDIFS="$IFS"
 	IFS=$'\n'
