@@ -188,6 +188,16 @@ def process_prompt_list(prompt_list):
 
     return prompt_list_out
 
+def make_init_image_list():
+    init_image_opt = cu_get_config_value('init_image', str, None)
+
+    if init_image_opt:
+        # default to steps / 2
+        skip_steps_opt = cu_get_config_value('skip_steps', int, int(steps / 2))
+        return [ [ init_image_opt, skip_steps_opt ] ]
+    else:
+        return []
+
 def cu_callback_display_rate():
     pass
 

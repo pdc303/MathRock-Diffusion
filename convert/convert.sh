@@ -283,7 +283,7 @@ process_python_file_pass2()
 	local LINES=( $(< "$INFILE") )
 	IFS="$OLDIFS"
 
-	for LNO in ${!LINES[@]}; do
+	for((LNO=0; LNO < ${#LINES[@]}; LNO++)) do
 		local LINE="${LINES[$LNO]}"
 		local LINEOUT=
 
@@ -305,6 +305,10 @@ process_python_file_pass2()
 			local INDENT="$(duplicate_indent "$LINE")"
 			echo "${INDENT}cu_callback_display_rate()" >> "$OUTFILE" || exit
 			LINEOUT="$LINE"
+		elif [ "$LINE" == "init_image_list = [" ]; then
+			LINEOUT="init_image_list = make_init_image_list()"
+			# drop the next 3 lines
+			((LNO+=3))
 		else
 			LINEOUT="$LINE"
 		fi
