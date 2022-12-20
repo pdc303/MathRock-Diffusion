@@ -109,6 +109,8 @@ handle_param_line()
 		TYPE="boolean"
 	elif echo "$LINE" | grep '#.*param.*type.*:.*number' >/dev/null; then
 		TYPE="number"
+	elif echo "$LINE" | grep '#.*param.*type.*:.*integer' >/dev/null; then
+		TYPE="integer"
 	elif echo "$LINE" | grep '#.*param.*type.*:.*string' >/dev/null; then
 		TYPE="string"
 	elif echo "$LINE" | grep '#.*param.*type.*:.*raw' >/dev/null; then
@@ -129,6 +131,9 @@ handle_param_line()
 			;;
 		number)
 			local PYTYPE="float"
+			;;
+		integer)
+			local PYTYPE="int"
 			;;
 		string)
 			local PYTYPE="str"
