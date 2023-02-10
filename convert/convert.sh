@@ -297,7 +297,7 @@ process_python_file_pass2()
 			echo "cu_callback_startup()" >> "$OUTFILE" || exit
 		fi
 
-		if echo "$LINE" | fgrep '#param' >/dev/null | echo "$LINE" | fgrep '#@param' >/dev/null; then
+		if echo "$LINE" | fgrep '#param' >/dev/null || echo "$LINE" | fgrep '#@param' >/dev/null; then
 			handle_param_line "$LINE" "$OUTFILE"
 			continue
 		elif [ "$LINE" == "image_prompts = {" ]; then
