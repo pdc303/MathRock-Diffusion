@@ -3,6 +3,8 @@ import os
 import ast
 import json
 import random
+import atexit
+import time
 
 def cu_install_packages():
     os.system('pip install imutils')
@@ -156,6 +158,11 @@ def get_random_site():
     sites_list = cu_get_config_value('sites_list', str, default_sites_list)
     return get_random_line_from_file(sites_list)
 
+default_modifiers_list = f'{cu_get_self_dir()}/convert/lists/modifiers.txt'
+def get_random_modifier():
+    modifiers_list = cu_get_config_value('modifiers_list', str, default_modifiers_list)
+    return get_random_line_from_file(modifiers_list)
+
 def process_prompt_directive_artist(prompt_str):
     while '%ARTIST%' in prompt_str:
         artist = get_random_artist()
@@ -170,6 +177,13 @@ def process_prompt_directive_site(prompt_str):
 
     return prompt_str
 
+def process_prompt_directive_modifier(prompt_str):
+    while '%MODIFIER%' in prompt_str:
+        modifier = get_random_modifier()
+        prompt_str = prompt_str.replace('%MODIFIER%', modifier, 1)
+
+    return prompt_str
+
 def process_prompt_list(prompt_list):
     global n_batches
 
@@ -181,6 +195,7 @@ def process_prompt_list(prompt_list):
             for prompt_part in prompt:
                 prompt_part = process_prompt_directive_artist(prompt_part)
                 prompt_part = process_prompt_directive_site(prompt_part)
+                prompt_part = process_prompt_directive_modifier(prompt_part)
                 new_prompt.append(prompt_part)
             prompt_list_out.append(new_prompt)
 
@@ -205,4 +220,46 @@ def cu_callback_startup():
     cu_install_packages()
     cu_import_packages()
 
+    global time_execution_start
+    time_execution_start = int(time.time())
 
+# FIXME: we only write one stats file, regardless of batch size
+def cu_write_stats_file():
+    global batchFolder
+    global batch_name
+    global batchNum
+    # it is possible for this code to be called before
+    # batchFolder, batch_name and batchNum have been defined, so
+    # catch this case and just return
+    try:
+        # undo the last increment of the batch number
+        batchNum = batchNum - 1
+        settings_file = f"{batchFolder}/{batch_name}({batchNum})_settings.txt"
+        stats_file = f"{batchFolder}/{batch_name}({batchNum})_stats.txt"
+
+        vram_stats = torch.cuda.memory_stats(0)
+        peak_all = vram_stats['reserved_bytes.all.peak']
+
+        stats = {}
+        stats['peak_vram'] = peak_all
+        time_now = int(time.time())
+        stats['run_time'] = time_now - time_execution_start
+        stats['device_name'] = torch.cuda.get_device_name(0)
+
+        if os.path.exists(settings_file):
+            with open(stats_file, 'w') as f:
+                json.dump(stats, f, indent=4)
+                f.close()
+        else:
+            print("Not writing stats file because settings file does not exist")
+    finally:
+        try:
+            # restore batchNum
+            batchNum = batchNum + 1
+        except:
+            pass
+
+def cu_callback_exit():
+    cu_write_stats_file()
+
+atexit.register(cu_callback_exit)
