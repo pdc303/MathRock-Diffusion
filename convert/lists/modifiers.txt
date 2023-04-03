@@ -212,3 +212,7 @@ kinetic
 particle effects
 fractalism
 draw distance
+moody
+clean lines
+thick lines
+distinctive
