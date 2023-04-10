@@ -160,3 +160,4 @@ wlop
 makoto shinkai
 james gilleard
 paul lehr
+Wojciech Siudmak
