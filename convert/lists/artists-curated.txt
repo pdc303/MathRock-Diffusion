@@ -162,3 +162,5 @@ makoto shinkai
 james gilleard
 paul lehr
 Wojciech Siudmak
+Daniel Dociu
+Daniel Romanovsky
