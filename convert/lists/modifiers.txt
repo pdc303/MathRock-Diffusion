@@ -175,7 +175,6 @@ Mayan
 Inca
 Aztec
 Celtic
-Tartan
 Death Stranding
 Nintendo
 Sega
@@ -216,3 +215,5 @@ moody
 clean lines
 thick lines
 distinctive
+matte painting
+matte
